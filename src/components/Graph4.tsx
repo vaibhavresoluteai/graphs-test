@@ -3,7 +3,7 @@ import { ResponsiveLine } from "@nivo/line";
 import Papa from "papaparse";
 
 interface DataPoint {
-  x: number; // Sequential Index (1, 2, 3, ...)
+  x: number; // Total Detection Time
   y: number; // Approx. Wastage Percentage
 }
 
@@ -20,20 +20,16 @@ const LineChart: React.FC = () => {
           skipEmptyLines: true,
           dynamicTyping: true,
           complete: (result) => {
-            console.log("Raw CSV Data:", result.data); // Debugging
-
             const parsedData: DataPoint[] = result.data
               .map((row: any, index: number) => {
-                if (!row["Approx. Wastage Percentage"]) return null; // Skip missing data
+                if (!row["Approx. Wastage Percentage"] || !row["Total detection time"]) return null; // Skip missing data
 
                 return {
-                  x: index + 1, // Sequential index for X-Axis
-                  y: parseFloat(row["Approx. Wastage Percentage"]) || 0, // Ensure Y-axis is valid
+                  x: parseFloat(row["Total detection time"]), // Use 'Total detection time' for X-Axis
+                  y: parseFloat(row["Approx. Wastage Percentage"])*100 || 0, // Ensure Y-axis is valid
                 };
               })
               .filter((item) => item !== null) as DataPoint[];
-
-            console.log("Processed Data:", parsedData); // Debugging
 
             if (parsedData.length > 0) {
               setChartData([{ id: "Wastage Trend", data: parsedData }]);
@@ -52,10 +48,10 @@ const LineChart: React.FC = () => {
           <ResponsiveLine
             data={chartData}
             margin={{ top: 50, right: 30, bottom: 50, left: 60 }}
-            xScale={{ type: "linear", min: 1 }} // Ensures correct indexing
+            xScale={{ type: "linear", min: 1 }} // Ensures correct indexing based on 'Total detection time'
             yScale={{ type: "linear", min: "auto", max: "auto" }}
             axisBottom={{
-              legend: "Detection Order",
+              legend: "Total Detection Time",
               legendOffset: 36,
               legendPosition: "middle",
               tickValues: dataLength > 10 ? 5 : dataLength, // Use stored length
@@ -65,7 +61,7 @@ const LineChart: React.FC = () => {
               legendOffset: -50,
               legendPosition: "middle",
             }}
-            colors={{ scheme: "nivo" }}
+            colors={["#ff6347"]}
             pointSize={8}
             pointBorderWidth={2}
             useMesh={true}

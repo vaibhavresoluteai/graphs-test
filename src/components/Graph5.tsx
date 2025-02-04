@@ -9,7 +9,7 @@ interface CSVRow {
   'Alert status': string;
 }
 
-const GraphWithCSV: React.FC = () => {
+const GraphWithCSV3: React.FC = () => {
   const [chartData, setChartData] = useState<any>([]);
   const [options, setOptions] = useState<any>({
     chart: {
@@ -35,7 +35,7 @@ const GraphWithCSV: React.FC = () => {
       tickAmount: 10,
     },
     title: {
-      text: 'Approx. Wastage Percentage Over Time',
+      text: 'Approx. Wastage Percentage Over Total Detection Time',
       align: 'center',
     },
     yaxis: {
@@ -74,11 +74,14 @@ const GraphWithCSV: React.FC = () => {
   }, []);
 
   const processData = (data: CSVRow[]) => {
-    // Extract all detection start times for x-axis categories
-    const categories = data.map((row: CSVRow, index: number) => row['Detection Start time'] || `Time ${index + 1}`);
+    // Skip every 28th entry
+    const filteredData = data.filter((_, index) => index % 100 !== 0);
+
+    // Use 'Total detection time' for x-axis categories
+    const categories = filteredData.map((row: CSVRow) => row['Total detection time'] || `Time ${row['Detection Start time']}`);
 
     // Extract all Approx. Wastage Percentage values for y-axis, handling invalid values
-    const values = data.map((row: CSVRow) => {
+    const values = filteredData.map((row: CSVRow) => {
       const value = parseFloat(row['Approx. Wastage Percentage']);
       return isNaN(value) ? null : value;
     }).filter((value: any) => value !== null);
@@ -102,6 +105,7 @@ const GraphWithCSV: React.FC = () => {
 
   return (
     <div>
+        <div>Hello</div>
       {loading ? (
         <p>Loading data...</p>
       ) : error ? (
@@ -120,4 +124,4 @@ const GraphWithCSV: React.FC = () => {
   );
 };
 
-export default GraphWithCSV;
+export default GraphWithCSV3;
